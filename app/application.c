@@ -43,9 +43,6 @@ int device_index;
 struct {
     event_param_t temperature;
     event_param_t temperature_ds18b20;
-    event_param_t humidity;
-    event_param_t illuminance;
-    event_param_t pressure;
 
 } params;
 
@@ -72,10 +69,12 @@ void ds18b20_event_handler(bc_ds18b20_t *self, uint64_t device_address, bc_ds18b
 {
     (void) p;
 
-    float value = NAN;
+    temperature_on_display = NAN;
 
-    if (e == bc_ds18b20_EVENT_UPDATE)
+    if (e == BC_DS18B20_EVENT_UPDATE)
     {
+        float value = NAN;
+
         bc_ds18b20_get_temperature_celsius(self, device_address, &value);
 
         //bc_log_debug("UPDATE %" PRIx64 "(%d) = %f", device_address, device_index, value);
@@ -87,10 +86,12 @@ void ds18b20_event_handler(bc_ds18b20_t *self, uint64_t device_address, bc_ds18b
             bc_radio_pub_float(topic, &value);
             params.temperature_ds18b20.value = value;
             params.temperature_ds18b20.next_pub = bc_scheduler_get_spin_tick() + TEMPERATURE_DS18B20_PUB_NO_CHANGE_INTEVAL;
-            bc_scheduler_plan_from_now(0, 300);
-
         }
+
+        temperature_on_display = value;
     }
+
+    bc_scheduler_plan_now(0);
 }
 
 // This task is fired once after the SERVICE_INTERVAL_INTERVAL milliseconds and changes the period
@@ -114,8 +115,8 @@ void application_init(void)
     bc_module_battery_set_event_handler(battery_event_handler, NULL);
     bc_module_battery_set_update_interval(BATTERY_UPDATE_INTERVAL);
 
-    // For single sensor you can call bc_ds18b20_init()
-    bc_ds18b20_init(&ds18b20, BC_DS18B20_RESOLUTION_BITS_12);
+    // For multiple sensor you can call bc_ds18b20_init() more in sdk/_excamples/ds18b20_multiple
+    bc_ds18b20_init_single(&ds18b20, BC_DS18B20_RESOLUTION_BITS_12);
 
     bc_ds18b20_set_event_handler(&ds18b20, ds18b20_event_handler, NULL);
     bc_ds18b20_set_update_interval(&ds18b20, UPDATE_SERVICE_INTERVAL);
