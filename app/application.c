@@ -38,7 +38,7 @@ float temperature_on_display = NAN;
 static bc_ds18b20_t ds18b20;
 
 int device_index;
-
+bc_gfx_t *gfx;
 
 struct {
     event_param_t temperature;
@@ -128,6 +128,7 @@ void application_init(void)
     bc_led_pulse(&led, 2000);
 
     bc_module_lcd_init();
+    gfx = bc_module_lcd_get_gfx();
 
     //bc_log_init(BC_LOG_LEVEL_DEBUG, BC_LOG_TIMESTAMP_ABS);
     bc_scheduler_plan_from_now(0, 1000);
@@ -144,18 +145,14 @@ void application_task(void)
 
     bc_system_pll_enable();
 
-    bc_module_lcd_clear();
-
-    bc_module_lcd_set_font(&bc_font_ubuntu_33);
-    snprintf(str_temperature, sizeof(str_temperature), "%.1f   ", params.temperature_ds18b20.value);
-    int x = bc_module_lcd_draw_string(20, 20, str_temperature, true);
-    temperature_on_display = params.temperature_ds18b20.value;
+    bc_gfx_clear(gfx);
+    bc_gfx_set_font(gfx, &bc_font_ubuntu_33);
+    int x = bc_gfx_printf(gfx, 20,20, 1, "%.1f   ", temperature_on_display);
 
     bc_module_lcd_set_font(&bc_font_ubuntu_24);
-    bc_module_lcd_draw_string(x - 20, 25, "\xb0" "C   ", true);
+    bc_gfx_draw_string(gfx, x - 20, 25, "\xb0" "C   ", 1);
 
-    bc_module_lcd_update();
+    bc_gfx_update(gfx);
 
     bc_system_pll_disable();
-
 }
