@@ -319,7 +319,7 @@ void application_init(void)
     bc_ds18b20_set_event_handler(&ds18b20, ds18b20_event_handler, NULL);
 
     ds18b20_measure_task_id = bc_scheduler_register(ds18b20_measure_task, NULL, BC_TICK_INFINITY);
-    
+
     // Initialize LED
     bc_led_init(&led, BC_GPIO_LED, false, false);
     bc_led_set_mode(&led, BC_LED_MODE_OFF);
