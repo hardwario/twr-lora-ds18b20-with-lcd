@@ -6,6 +6,7 @@
 #endif
 
 #include <bcl.h>
+#include <twr.h>
 
 typedef struct
 {
